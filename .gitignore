@@ -1,0 +1,13 @@
+.gradle
+/local.properties
+/.idea/workspace.xml
+/.idea/libraries
+.DS_Store
+/build
+/captures
+
+# IntelliJ specific files/directories
+.idea
+*.ipr
+*.iws
+*.iml
