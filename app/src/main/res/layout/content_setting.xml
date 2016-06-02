@@ -12,29 +12,29 @@
     tools:context="com.cs350.iyy.SettingActivity"
     tools:showIn="@layout/activity_setting">
 
-    <!-- Enable/Disable Collecting Facebook data-->
     <TextView
         android:id="@+id/setting_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/setting_button" />
 
+    <!-- Enable/Disable Collecting Facebook data-->
     <TextView
         android:id="@+id/facebook_collect_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/setting_title"
-        android:text="Facebook" />
-
+        android:text="@string/facebook_text" />
     <Switch
         android:id="@+id/facebook_collect_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/setting_title"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:textOff="Off"
         android:textOn="On"
         android:checked="true" />
+
     <!-- Enable/Disable Collecting Twitter data-->
     <TextView
         android:id="@+id/twitter_collect_text"
@@ -42,24 +42,75 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/facebook_collect_text"
         android:layout_marginTop="10dp"
-        android:text="Twitter" />
-
+        android:text="@string/twitter_text" />
     <Switch
         android:id="@+id/twitter_collect_switch"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/facebook_collect_text"
         android:layout_marginTop="10dp"
-        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
         android:textOff="Off"
         android:textOn="On"
         android:checked="true" />
+
+    <!-- Select alarm interval-->
+    <TextView
+        android:id="@+id/alarm_interval_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/twitter_collect_text"
+        android:layout_marginTop="10dp"
+        android:text="@string/alarm_interval" />
+    <Spinner
+        android:id="@+id/alarm_interval_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/twitter_collect_text"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:entries="@array/alarm_interval" />
+
+    <!-- Select alarm type-->
+    <TextView
+        android:id="@+id/alarm_type_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/alarm_interval_text"
+        android:layout_marginTop="10dp"
+        android:text="@string/alarm_type" />
+    <Spinner
+        android:id="@+id/alarm_type_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/alarm_interval_text"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:entries="@array/alarm_type" />
+
+    <!-- Select alarm tone-->
+    <TextView
+        android:id="@+id/alarm_tone_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/alarm_type_text"
+        android:layout_marginTop="10dp"
+        android:text="@string/alarm_tone" />
+    <Spinner
+        android:id="@+id/alarm_tone_spinner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/alarm_type_text"
+        android:layout_alignParentEnd="true"
+        android:layout_marginTop="10dp"
+        android:entries="@array/alarm_tone" />
+
     <!-- Move to main activity-->
     <Button
         android:id="@+id/setting_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/twitter_collect_text"
+        android:layout_below="@id/alarm_tone_text"
         android:onClick="onBackButtonClicked"
         android:text="@string/back_button" />
 </RelativeLayout>

@@ -5,7 +5,12 @@
     <string name="title_activity_statistics">StatisticsActivity</string>
     <string name="title">잉여야</string>
     <string name="setting_button">Setting</string>
-    <string name="statistcs_button">Statistics</string>
+    <string name="statistics_button">Statistics</string>
     <string name="back_button">Back</string>
     <string name="run_button">Run</string>
+    <string name="facebook_text">Facebook</string>
+    <string name="twitter_text">Twitter</string>
+    <string name="alarm_interval">Alarm interval</string>
+    <string name="alarm_type">Alarm type</string>
+    <string name="alarm_tone">Alarm tone</string>
 </resources>

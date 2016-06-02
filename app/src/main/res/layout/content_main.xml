@@ -41,5 +41,5 @@
         android:layout_height="wrap_content"
         android:layout_below="@+id/settingButton"
         android:onClick="onStatisticsButtonClicked"
-        android:text="@string/statistcs_button" />
+        android:text="@string/statistics_button" />
 </RelativeLayout>
