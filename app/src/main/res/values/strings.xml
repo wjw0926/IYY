@@ -18,4 +18,5 @@
     <string name="check_value">Check value</string>
     <string name="period_from">From</string>
     <string name="period_to">To</string>
+    <string name="title_activity_chart">ChartActivity</string>
 </resources>

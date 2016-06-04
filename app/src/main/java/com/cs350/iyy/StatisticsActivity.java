@@ -44,6 +44,10 @@ public class StatisticsActivity extends AppCompatActivity {
         DatePickerDialog dialog = new DatePickerDialog(this, listener, 2013, 10, 22);
         dialog.show();
     }
+    public void onRunButtonClicked(View v) {
+        Intent intent = new Intent(getApplicationContext(), ChartActivity.class);
+        startActivity(intent);
+    }
     public void onBackButtonClicked(View v) {
         Intent intent = new Intent(getApplicationContext(), MainActivity.class);
         startActivity(intent);
