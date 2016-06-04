@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void insertPostingData(View view){
+    public void insertPostingData(View view) {
         String phoneID = "1";
         String sns = "Facebook";
         Date d = new Date();
@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         insertToDatabase(phoneID, sns, date);
     }
 
-    private void insertToDatabase(String phoneID, String sns, String date){
+    private void insertToDatabase(String phoneID, String sns, String date) {
 
         class InsertData extends AsyncTask<String, Void, String> {
             ProgressDialog loading;
@@ -145,10 +145,9 @@ public class MainActivity extends AppCompatActivity {
                     }
                     return sb.toString();
                 }
-                catch(Exception e){
+                catch(Exception e) {
                     return new String("Exception: " + e.getMessage());
                 }
-
             }
         }
 

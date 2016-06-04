@@ -13,4 +13,9 @@
     <string name="alarm_interval">Alarm interval</string>
     <string name="alarm_type">Alarm type</string>
     <string name="alarm_tone">Alarm tone</string>
+    <string name="type_of_sns">Type of SNS</string>
+    <string name="period">Period</string>
+    <string name="check_value">Check value</string>
+    <string name="period_from">From</string>
+    <string name="period_to">To</string>
 </resources>
