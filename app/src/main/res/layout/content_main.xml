@@ -42,4 +42,12 @@
         android:layout_below="@+id/settingButton"
         android:onClick="onStatisticsButtonClicked"
         android:text="@string/statistics_button" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="InsertHardcodedData"
+        android:onClick="insertPostingData"
+        android:layout_below="@+id/statisticsButton"
+        android:id="@+id/button" />
 </RelativeLayout>
