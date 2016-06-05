@@ -10,7 +10,6 @@ import android.view.View;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +17,6 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -31,9 +29,8 @@ public class ChartActivity extends AppCompatActivity {
     private static final String TAG_SNS = "SNS";
     private static final String TAG_DATE ="Date";
 
-    JSONArray postings = null;
-    ArrayList<HashMap<String,String>> postingList;
-    ListView list;
+    private ArrayList<HashMap<String,String>> postingList;
+    private ListView list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,13 +51,13 @@ public class ChartActivity extends AppCompatActivity {
 
         list = (ListView) findViewById(R.id.listView);
         postingList = new ArrayList<>();
-        getData("http://192.168.0.17/~jaewook/getdata.php");
+        getData("http://192.168.0.14/~jaewook/getdata.php");
     }
 
-    protected void showList(String result) {
+    private void showList(String result) {
         try {
             JSONObject jsonObj = new JSONObject(result);
-            postings = jsonObj.getJSONArray(TAG_RESULTS);
+            JSONArray postings = jsonObj.getJSONArray(TAG_RESULTS);
 
             for(int i = 0; i < postings.length(); i++){
                 JSONObject c = postings.getJSONObject(i);
@@ -88,7 +85,7 @@ public class ChartActivity extends AppCompatActivity {
         }
     }
 
-    public void getData(String url){
+    private void getData(String url){
         class GetDataJSON extends AsyncTask<String, Void, String> {
 
             @Override
@@ -103,10 +100,10 @@ public class ChartActivity extends AppCompatActivity {
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
                     StringBuilder sb = new StringBuilder();
-                    String json = null;
+                    String json;
 
                     while((json = bufferedReader.readLine()) != null) {
-                        sb.append(json + "\n");
+                        sb.append(json).append("\n");
                     }
                     return sb.toString().trim();
 

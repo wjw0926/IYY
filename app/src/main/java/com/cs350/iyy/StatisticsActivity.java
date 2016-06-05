@@ -12,7 +12,7 @@ import android.widget.DatePicker;
 import android.widget.Toast;
 
 public class StatisticsActivity extends AppCompatActivity {
-    private DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
+    private final DatePickerDialog.OnDateSetListener listener = new DatePickerDialog.OnDateSetListener() {
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
             Toast.makeText(getApplicationContext(), year + "년" + (monthOfYear+1) + "월" + dayOfMonth + "일", Toast.LENGTH_SHORT).show();
@@ -37,11 +37,11 @@ public class StatisticsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
     public void onFromButtonClicked(View v) {
-        DatePickerDialog dialog = new DatePickerDialog(this, listener, 2013, 10, 22);
+        DatePickerDialog dialog = new DatePickerDialog(this, listener, 2016, 4, 1);
         dialog.show();
     }
     public void onToButtonClicked(View v) {
-        DatePickerDialog dialog = new DatePickerDialog(this, listener, 2013, 10, 22);
+        DatePickerDialog dialog = new DatePickerDialog(this, listener, 2016, 5, 1);
         dialog.show();
     }
     public void onRunButtonClicked(View v) {

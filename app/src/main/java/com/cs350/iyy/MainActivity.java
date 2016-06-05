@@ -1,12 +1,11 @@
 package com.cs350.iyy;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -24,11 +23,9 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
-import java.util.Date;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 
 /**
  * for twitter connection
@@ -42,14 +39,15 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "MainActivity";
-    TextView nameText;
-    Button connectBtn;
+    private static final String TAG = "MainActivity";
 
-    Button writeBtn;
-    EditText writeInput;
+    private TimerTask timerTask = null;
+    private static Timer timer = null;
 
-    Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
+
+    private static Boolean checked = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,23 +64,35 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final ToggleButton tb = (ToggleButton) this.findViewById(R.id.startstopButton);
+        final ToggleButton tb = (ToggleButton) this.findViewById(R.id.startStopButton);
         tb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (tb.isChecked()) {
-                    tb.setTextColor(Color.RED);
+                    timerJob();
+                    timer = new Timer();
+                    timer.schedule(timerTask, 0, 15000);
+                    checked = true;
                 } else {
-                    tb.setTextColor(Color.CYAN);
+                    timer.cancel();
+                    timer = null;
+                    checked = false;
                 }
             }
         });
+        tb.setChecked(checked);
+    }
 
-        final Button connectBtn = (Button) this.findViewById(R.id.connectBtn);
-        connectBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                connect_twitter();
-            }
-        });
+    private void timerJob() {
+        try {
+            timerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    connect_twitter();
+                }
+            };
+        } catch (Exception ignored) {
+
+        }
     }
 
     public void onSettingButtonClicked(View v) {
@@ -94,12 +104,9 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(getApplicationContext(), StatisticsActivity.class);
         startActivity(intent);
     }
-    private void connect_twitter() {
-        Log.d(TAG, "connect_twitter() called");
-        if (BasicInfo.TwitLogin) {
-            Log.d(TAG, "twitter already logged in.");
-            Toast.makeText(getBaseContext(), "twitter already logged in.", Toast.LENGTH_LONG).show();
 
+    private void connect_twitter() {
+        if (BasicInfo.TwitLogin) {
             try {
                 ConfigurationBuilder builder = new ConfigurationBuilder();
 
@@ -111,17 +118,12 @@ public class MainActivity extends AppCompatActivity {
                 Configuration config = builder.build();
                 TwitterFactory tFactory = new TwitterFactory(config);
                 BasicInfo.TwitInstance = tFactory.getInstance();
-
-                Toast.makeText(getBaseContext(), "twitter connected.", Toast.LENGTH_LONG).show();
-
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
 
             showUserTimeline();
-
         } else {
-
             RequestTokenThread thread = new RequestTokenThread();
             thread.start();
         }
@@ -130,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * RequestToken 요청 스레드
      */
-    class RequestTokenThread extends Thread {
+    private class RequestTokenThread extends Thread {
         public void run() {
 
             try {
@@ -158,7 +160,6 @@ public class MainActivity extends AppCompatActivity {
                         startActivityForResult(intent, BasicInfo.REQ_CODE_TWIT_LOGIN);
                     }
                 });
-
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -181,7 +182,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     class OAuthAccessTokenThread extends Thread {
-        Intent resultIntent;
+        final Intent resultIntent;
 
         public OAuthAccessTokenThread(Intent intent) {
             resultIntent = intent;
@@ -203,8 +204,6 @@ public class MainActivity extends AppCompatActivity {
 
                 mHandler.post(new Runnable() {
                     public void run() {
-                        Toast.makeText(getBaseContext(), "Twitter connection succeeded : " + BasicInfo.TWIT_KEY_TOKEN, Toast.LENGTH_LONG).show();
-
                         showUserTimeline();
                     }
                 });
@@ -217,9 +216,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void showUserTimeline() {
-        Log.d(TAG, "showUserTimeline() called.");
-
-        // UserTimeline 요청
         GetUserTimelineThread thread = new GetUserTimelineThread();
         thread.start();
     }
@@ -238,14 +234,13 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 final List<Status> status = mTwit.getUserTimeline();
-                Log.d(TAG, "string inserted");
 
                 Status stat;
 
                 for (int i = 0; i < status.size(); i++)
                 {
                     stat = status.get(i);
-                    Log.d(TAG, stat.getCreatedAt().toString());
+                    insertTwitterPostingData(stat.getCreatedAt().toString());
                 }
 
             } catch(Exception ex) {
@@ -272,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("TWIT_KEY_TOKEN", BasicInfo.TWIT_KEY_TOKEN);
         editor.putString("TWIT_KEY_TOKEN_SECRET", BasicInfo.TWIT_KEY_TOKEN_SECRET);
 
-        editor.commit();
+        editor.apply();
     }
 
     private void loadProperties() {
@@ -304,41 +299,30 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void insertPostingData(View view) {
-        String phoneID = "1";
-        String sns = "Facebook";
-        Date d = new Date();
-        String date = d.toString();
-
-        insertToDatabase(phoneID, sns, date);
+    private void insertTwitterPostingData(String date) {
+        String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        insertToDatabase(phoneID, "Twitter", date);
     }
 
     private void insertToDatabase(String phoneID, String sns, String date) {
 
         class InsertData extends AsyncTask<String, Void, String> {
-            ProgressDialog loading;
-
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
-                loading = ProgressDialog.show(MainActivity.this, "Please Wait", null, true, true);
-            }
 
             @Override
             protected void onPostExecute(String s) {
                 super.onPostExecute(s);
-                loading.dismiss();
+                //loading.dismiss();
                 Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
             }
 
             @Override
             protected String doInBackground(String... params) {
                 try{
-                    String phoneID = (String) params[0];
-                    String sns = (String) params[1];
-                    String date = (String) params[2];
+                    String phoneID = params[0];
+                    String sns = params[1];
+                    String date = params[2];
 
-                    String link="http://192.168.0.17/~jaewook/insert.php"; // Server IP address
+                    String link="http://192.168.0.14/~jaewook/insert.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
@@ -355,7 +339,7 @@ public class MainActivity extends AppCompatActivity {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
                     StringBuilder sb = new StringBuilder();
-                    String line = null;
+                    String line;
 
                     // Read Server Response
                     while((line = reader.readLine()) != null)
@@ -366,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
                     return sb.toString();
                 }
                 catch(Exception e) {
-                    return new String("Exception: " + e.getMessage());
+                    return "Exception: " + e.getMessage();
                 }
             }
         }

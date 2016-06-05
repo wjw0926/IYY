@@ -4,7 +4,7 @@ import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
 
-public class BasicInfo {
+class BasicInfo {
     public static final String TWIT_API_KEY = "xRoDCNvHVfoQToAWyebf4g";
     public static final String TWIT_CONSUMER_KEY = "xRoDCNvHVfoQToAWyebf4g";
     public static final String TWIT_CONSUMER_SECRET = "LooMN0gPSrc0j1ddX8AV8tmxBsA28rLWxNhFo0pNJg";
