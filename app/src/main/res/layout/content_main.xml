@@ -42,4 +42,11 @@
         android:layout_below="@+id/settingButton"
         android:onClick="onStatisticsButtonClicked"
         android:text="@string/statistics_button" />
+
+    <Button
+        android:id="@+id/connectBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/statisticsButton"
+        android:text="@string/get_twitter_data_button" />
 </RelativeLayout>
