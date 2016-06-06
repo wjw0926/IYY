@@ -11,6 +11,7 @@ class BasicInfo {
     public static final String TWIT_CALLBACK_URL = "http://android-town.org";
 
     public static final int REQ_CODE_TWIT_LOGIN = 1001;
+    public static final int REQ_CODE_FACEBOOK_LOGIN = 64206;
 
     public static boolean TwitLogin = false;
     public static Twitter TwitInstance = null;

@@ -23,6 +23,23 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Arrays;
+import android.widget.Button;
+
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -47,10 +64,13 @@ public class MainActivity extends AppCompatActivity {
     private final Handler mHandler = new Handler();
 
     private static Boolean checked = false;
+    private CallbackManager callbackManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -80,6 +100,13 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         tb.setChecked(checked);
+
+        final Button facebook_connectBtn = (Button) this.findViewById(R.id.facebookconnectBtn);
+        facebook_connectBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                connect_facebook();
+            }
+        });
     }
 
     private void timerJob() {
@@ -128,7 +155,55 @@ public class MainActivity extends AppCompatActivity {
             thread.start();
         }
     }
+    private void connect_facebook() {
+        Log.d(TAG, "connect_facebook() called");
 
+        callbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().logInWithReadPermissions(MainActivity.this,
+                Arrays.asList("public_profile","user_posts", "email"));
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+
+            public void onSuccess(LoginResult loginResult) {
+
+                GraphRequest request = new GraphRequest(
+                        loginResult.getAccessToken(),
+                        "/me/feed",
+                        null,
+                        HttpMethod.GET,
+                        new GraphRequest.Callback() {
+                            @Override
+                            public void onCompleted(
+                                    GraphResponse response) {
+                                // Application code
+                                Log.d(TAG, response.toString());
+
+                                try{
+                                    JSONArray k = response.getJSONObject().getJSONArray("data");
+                                    for(int i = 0 ; i < k.length() ; i++){
+                                        Log.d(TAG, k.get(i).toString());
+                                    }
+
+                                }catch(JSONException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                request.executeAsync();
+            }
+
+            @Override
+            public void onCancel() {
+                Toast.makeText(getApplicationContext(), "in LoginResult on cancel", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                Toast.makeText(getApplicationContext(), "in LoginResult on error", Toast.LENGTH_LONG).show();
+            }
+        });
+        Log.d(TAG, "connect_facebook() end!!!!!");
+    }
     /**
      * RequestToken 요청 스레드
      */
@@ -173,14 +248,25 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, resultIntent);
 
         if (resultCode == RESULT_OK) {
+            /**
+             * Twitter로부터의 응답
+             */
+            //Log.d(TAG, "result code:" + Integer.toString(resultCode));
+            //Log.d(TAG, "request code:" + Integer.toString(requestCode));
             if (requestCode == BasicInfo.REQ_CODE_TWIT_LOGIN) {
 
                 OAuthAccessTokenThread thread = new OAuthAccessTokenThread(resultIntent);
                 thread.start();
             }
+            else if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN){
+                callbackManager.onActivityResult(requestCode, resultCode, resultIntent);
+            }
+        }
+        else {
+            if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN)
+                callbackManager.onActivityResult(requestCode, resultCode, resultIntent);
         }
     }
-
     class OAuthAccessTokenThread extends Thread {
         final Intent resultIntent;
 
@@ -214,12 +300,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private void showUserTimeline() {
         GetUserTimelineThread thread = new GetUserTimelineThread();
         thread.start();
     }
-
 
     class GetUserTimelineThread extends Thread {
         public void run() {
@@ -276,7 +360,6 @@ public class MainActivity extends AppCompatActivity {
         BasicInfo.TwitLogin = pref.getBoolean("TwitLogin", false);
         BasicInfo.TWIT_KEY_TOKEN = pref.getString("TWIT_KEY_TOKEN", "");
         BasicInfo.TWIT_KEY_TOKEN_SECRET = pref.getString("TWIT_KEY_TOKEN_SECRET", "");
-
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -357,5 +440,7 @@ public class MainActivity extends AppCompatActivity {
 
         InsertData task = new InsertData();
         task.execute(phoneID, sns, date);
+
     }
+
 }
