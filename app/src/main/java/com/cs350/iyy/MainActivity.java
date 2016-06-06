@@ -25,8 +25,8 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
-import android.widget.Button;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -58,7 +58,6 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class MainActivity extends AppCompatActivity {
-    private static final String TAG = "MainActivity";
 
     private TimerTask timerTask = null;
     private static Timer timer = null;
@@ -92,7 +91,7 @@ public class MainActivity extends AppCompatActivity {
                 if (tb.isChecked()) {
                     timerJob();
                     timer = new Timer();
-                    timer.schedule(timerTask, 0, 30000);
+                    timer.schedule(timerTask, 0, 60000);
                     checked = true;
                 } else {
                     timer.cancel();
@@ -109,8 +108,10 @@ public class MainActivity extends AppCompatActivity {
             timerTask = new TimerTask() {
                 @Override
                 public void run() {
-                    connect_twitter();
-                    connect_facebook();
+                    if (BasicInfo.collectFacebook)
+                        connect_facebook();
+                    if (BasicInfo.collectTwitter)
+                        connect_twitter();
                 }
             };
         } catch (Exception ignored) {
@@ -133,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
         List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
         for(int i = 0; i < appList.size(); i++) {
             ActivityManager.RunningAppProcessInfo rapi = appList.get(i);
-            Log.d("run Process","Package Name : " + rapi.processName);
+            Log.d("Running process",rapi.processName);
         }
     }
 
@@ -161,8 +162,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
     private void connect_facebook() {
-        Log.d(TAG, "connect_facebook() called");
-
         if(BasicInfo.FacebookLogin) {
             GraphRequest request = new GraphRequest(
                     BasicInfo.loginResult.getAccessToken(),
@@ -173,14 +172,12 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void onCompleted(
                                 GraphResponse response) {
-                            // Application code
-                            Log.d(TAG, response.toString());
-
                             try{
                                 JSONArray k = response.getJSONObject().getJSONArray("data");
                                 for(int i = 0 ; i < k.length() ; i++){
-                                    //Log.d(TAG, k.getJSONObject(i).getString("created_time"));
-                                    insertFacebookPostingData(k.getJSONObject(i).getString("created_time"));
+                                    String date = k.getJSONObject(i).getString("created_time").substring(0, 10);
+                                    String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
+                                    insertFacebookPostingData(date + " " + time);
                                 }
 
                             }catch(JSONException e){
@@ -206,14 +203,12 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onCompleted(
                                         GraphResponse response) {
-                                    // Application code
-                                    Log.d(TAG, response.toString());
-
                                     try {
                                         JSONArray k = response.getJSONObject().getJSONArray("data");
                                         for (int i = 0; i < k.length(); i++) {
-                                            Log.d(TAG, k.getJSONObject(i).getString("created_time"));
-
+                                            String date = k.getJSONObject(i).getString("created_time").substring(0, 10);
+                                            String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
+                                            insertFacebookPostingData(date + " " + time);
                                         }
 
                                     } catch (JSONException e) {
@@ -236,7 +231,6 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
         }
-        Log.d(TAG, "connect_facebook() end!!!!!");
     }
     /**
      * RequestToken 요청 스레드
@@ -253,11 +247,6 @@ public class MainActivity extends AppCompatActivity {
                 TwitterFactory factory = new TwitterFactory(builder.build());
                 Twitter mTwit = factory.getInstance();
                 final RequestToken mRequestToken = mTwit.getOAuthRequestToken();
-                String outToken = mRequestToken.getToken();
-                String outTokenSecret = mRequestToken.getTokenSecret();
-
-                Log.d(TAG, "Request Token : " + outToken + ", " + outTokenSecret);
-                Log.d(TAG, "AuthorizationURL : " + mRequestToken.getAuthorizationURL());
 
                 BasicInfo.TwitInstance = mTwit;
                 BasicInfo.TwitRequestToken = mRequestToken;
@@ -285,8 +274,6 @@ public class MainActivity extends AppCompatActivity {
             /**
              * Twitter로부터의 응답
              */
-            //Log.d(TAG, "result code:" + Integer.toString(resultCode));
-            //Log.d(TAG, "request code:" + Integer.toString(requestCode));
             if (requestCode == BasicInfo.REQ_CODE_TWIT_LOGIN) {
 
                 OAuthAccessTokenThread thread = new OAuthAccessTokenThread(resultIntent);
@@ -354,12 +341,11 @@ public class MainActivity extends AppCompatActivity {
             try {
                 final List<Status> status = mTwit.getUserTimeline();
 
-                Status stat;
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-                for (int i = 0; i < status.size(); i++)
-                {
-                    stat = status.get(i);
-                    insertTwitterPostingData(stat.getCreatedAt().toString());
+                for (int i = 0; i < status.size(); i++) {
+                    String dateTime = sdf.format(status.get(i).getCreatedAt());
+                    insertTwitterPostingData(dateTime);
                 }
 
             } catch(Exception ex) {
@@ -435,7 +421,7 @@ public class MainActivity extends AppCompatActivity {
             protected void onPostExecute(String s) {
                 super.onPostExecute(s);
                 //loading.dismiss();
-                Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+                //Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -480,7 +466,6 @@ public class MainActivity extends AppCompatActivity {
 
         InsertData task = new InsertData();
         task.execute(phoneID, sns, date);
-
     }
 
 }

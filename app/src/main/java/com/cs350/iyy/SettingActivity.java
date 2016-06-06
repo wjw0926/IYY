@@ -11,9 +11,11 @@ import android.widget.AdapterView;
 import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.Toast;
 
 public class SettingActivity extends AppCompatActivity {
+
+    private static Boolean checked = false;
+    private static Boolean checked2 = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,51 +37,54 @@ public class SettingActivity extends AppCompatActivity {
         final Switch fbCollectSwitch = (Switch) findViewById(R.id.facebook_collect_switch);
         fbCollectSwitch.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton cb, boolean isChecked) {
-                if (isChecked)
-                    Toast.makeText(getApplication(), "Start collecting Facebook data", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(getApplication(), "Stop collecting Facebook data", Toast.LENGTH_SHORT).show();
+                if (isChecked) {
+                    BasicInfo.collectFacebook = true;
+                    checked = true;
+                } else {
+                    BasicInfo.collectFacebook = false;
+                    checked = false;
+                }
             }
         });
+        fbCollectSwitch.setChecked(checked);
+
         final Switch twCollectSwitch = (Switch) findViewById(R.id.twitter_collect_switch);
         twCollectSwitch.setOnCheckedChangeListener(new Switch.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton cb, boolean isChecked) {
-                if (isChecked)
-                    Toast.makeText(getApplication(), "Start collecting Twitter data", Toast.LENGTH_SHORT).show();
-                else
-                    Toast.makeText(getApplication(), "Stop collecting Twitter data", Toast.LENGTH_SHORT).show();
+                if (isChecked) {
+                    BasicInfo.collectTwitter = true;
+                    checked2 = true;
+                } else {
+                    BasicInfo.collectTwitter = false;
+                    checked2 = false;
+                }
             }
         });
+        twCollectSwitch.setChecked(checked2);
 
         final Spinner alarmIntervalSpinner = (Spinner) findViewById(R.id.alarm_interval_spinner);
         alarmIntervalSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedItem = parent.getItemAtPosition(position).toString();
-                Toast.makeText(getApplicationContext(), selectedItem, Toast.LENGTH_SHORT).show();
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
-                Toast.makeText(getApplicationContext(), "Nothing", Toast.LENGTH_SHORT).show();
             }
         });
         final Spinner alarmTypeSpinner = (Spinner) findViewById(R.id.alarm_type_spinner);
         alarmTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedItem = parent.getItemAtPosition(position).toString();
-                Toast.makeText(getApplicationContext(), selectedItem, Toast.LENGTH_SHORT).show();
             }
             public void onNothingSelected(AdapterView<?> parent) {
-                Toast.makeText(getApplicationContext(), "Nothing", Toast.LENGTH_SHORT).show();
             }
         });
         final Spinner alarmToneSpinner = (Spinner) findViewById(R.id.alarm_tone_spinner);
         alarmToneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedItem = parent.getItemAtPosition(position).toString();
-                Toast.makeText(getApplicationContext(), selectedItem, Toast.LENGTH_SHORT).show();
             }
             public void onNothingSelected(AdapterView<?> parent) {
-                Toast.makeText(getApplicationContext(), "Nothing", Toast.LENGTH_SHORT).show();
             }
         });
     }

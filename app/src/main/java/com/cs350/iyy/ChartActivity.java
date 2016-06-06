@@ -2,6 +2,7 @@ package com.cs350.iyy;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,8 +18,10 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -51,7 +54,8 @@ public class ChartActivity extends AppCompatActivity {
 
         list = (ListView) findViewById(R.id.listView);
         postingList = new ArrayList<>();
-        getData("http://192.168.0.42/~jaewook/getdata.php");
+        String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        getData("http://192.168.0.42/~jaewook/getData.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
     }
 
     private void showList(String result) {
@@ -67,8 +71,8 @@ public class ChartActivity extends AppCompatActivity {
 
                 HashMap<String,String> postingMap = new HashMap<>();
 
-                postingMap.put(TAG_PHONEID,phoneID);
-                postingMap.put(TAG_SNS,sns);
+                postingMap.put(TAG_PHONEID, phoneID);
+                postingMap.put(TAG_SNS, sns);
                 postingMap.put(TAG_DATE, date);
 
                 postingList.add(postingMap);
@@ -85,17 +89,32 @@ public class ChartActivity extends AppCompatActivity {
         }
     }
 
-    private void getData(String url){
+    private void getData(String url, String phoneID, String sns, String from, String to){
         class GetDataJSON extends AsyncTask<String, Void, String> {
 
             @Override
             protected String doInBackground(String... params) {
 
-                String uri = params[0];
-
                 try {
+                    String uri = params[0];
+                    String phoneID = params[1];
+                    String sns = params[2];
+                    String from = params[3];
+                    String to = params[4];
+
+                    String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
+                    data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
+                    data += "&" + URLEncoder.encode("from", "UTF-8") + "=" + URLEncoder.encode(from, "UTF-8");
+                    data += "&" + URLEncoder.encode("to", "UTF-8") + "=" + URLEncoder.encode(to, "UTF-8");
+
                     URL url = new URL(uri);
                     URLConnection conn = url.openConnection();
+
+                    conn.setDoOutput(true);
+                    OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+                    wr.write(data);
+                    wr.flush();
 
                     BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
@@ -119,6 +138,6 @@ public class ChartActivity extends AppCompatActivity {
             }
         }
         GetDataJSON g = new GetDataJSON();
-        g.execute(url);
+        g.execute(url, phoneID, sns, from, to);
     }
 }

@@ -2,6 +2,9 @@ package com.cs350.iyy;
 
 import com.facebook.login.LoginResult;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -26,4 +29,19 @@ class BasicInfo {
 
     public static boolean FacebookLogin = false;
     public static LoginResult loginResult;
+
+    public static boolean collectFacebook = false;
+    public static boolean collectTwitter = false;
+
+    /**
+     * For drawing charts
+     */
+    public static String TYPE_OF_SNS = "Twitter";
+    public static String CHECK_VALUE = "";
+    public static String DATE_FROM = "2015-01-01 00:00:00";
+
+    private static final Date globalDate = new Date();
+    private static final SimpleDateFormat globalSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private static final String globalDateTime = globalSDF.format(globalDate);
+    public static String DATE_TO = globalDateTime;
 }

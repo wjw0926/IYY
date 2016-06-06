@@ -49,5 +49,5 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/statisticsButton"
         android:onClick="onProcessList"
-        android:text="@string/statistics_button" />
+        android:text="Running process" />
 </RelativeLayout>

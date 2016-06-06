@@ -33,7 +33,7 @@
         android:layout_alignParentEnd="true"
         android:textOff="Off"
         android:textOn="On"
-        android:checked="true" />
+        android:checked="false" />
 
     <!-- Enable/Disable Collecting Twitter data-->
     <TextView
@@ -52,7 +52,7 @@
         android:layout_alignParentEnd="true"
         android:textOff="Off"
         android:textOn="On"
-        android:checked="true" />
+        android:checked="false" />
 
     <!-- Select alarm interval-->
     <TextView
