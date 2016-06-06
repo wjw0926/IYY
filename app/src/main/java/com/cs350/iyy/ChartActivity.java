@@ -51,7 +51,7 @@ public class ChartActivity extends AppCompatActivity {
 
         list = (ListView) findViewById(R.id.listView);
         postingList = new ArrayList<>();
-        getData("http://192.168.0.14/~jaewook/getdata.php");
+        getData("http://192.168.0.42/~jaewook/getdata.php");
     }
 
     private void showList(String result) {

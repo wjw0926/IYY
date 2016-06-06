@@ -1,5 +1,7 @@
 package com.cs350.iyy;
 
+import android.app.ActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
@@ -90,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
                 if (tb.isChecked()) {
                     timerJob();
                     timer = new Timer();
-                    timer.schedule(timerTask, 0, 15000);
+                    timer.schedule(timerTask, 0, 30000);
                     checked = true;
                 } else {
                     timer.cancel();
@@ -100,13 +102,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         tb.setChecked(checked);
-
-        final Button facebook_connectBtn = (Button) this.findViewById(R.id.facebookconnectBtn);
-        facebook_connectBtn.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                connect_facebook();
-            }
-        });
     }
 
     private void timerJob() {
@@ -115,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
                 @Override
                 public void run() {
                     connect_twitter();
+                    connect_facebook();
                 }
             };
         } catch (Exception ignored) {
@@ -130,6 +126,15 @@ public class MainActivity extends AppCompatActivity {
     public void onStatisticsButtonClicked(View v) {
         Intent intent = new Intent(getApplicationContext(), StatisticsActivity.class);
         startActivity(intent);
+    }
+
+    public void onProcessList(View v) {
+        ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+        for(int i = 0; i < appList.size(); i++) {
+            ActivityManager.RunningAppProcessInfo rapi = appList.get(i);
+            Log.d("run Process","Package Name : " + rapi.processName);
+        }
     }
 
     private void connect_twitter() {
@@ -158,50 +163,79 @@ public class MainActivity extends AppCompatActivity {
     private void connect_facebook() {
         Log.d(TAG, "connect_facebook() called");
 
-        callbackManager = CallbackManager.Factory.create();
-        LoginManager.getInstance().logInWithReadPermissions(MainActivity.this,
-                Arrays.asList("public_profile","user_posts", "email"));
-        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
-            @Override
+        if(BasicInfo.FacebookLogin) {
+            GraphRequest request = new GraphRequest(
+                    BasicInfo.loginResult.getAccessToken(),
+                    "/me/feed",
+                    null,
+                    HttpMethod.GET,
+                    new GraphRequest.Callback() {
+                        @Override
+                        public void onCompleted(
+                                GraphResponse response) {
+                            // Application code
+                            Log.d(TAG, response.toString());
 
-            public void onSuccess(LoginResult loginResult) {
-
-                GraphRequest request = new GraphRequest(
-                        loginResult.getAccessToken(),
-                        "/me/feed",
-                        null,
-                        HttpMethod.GET,
-                        new GraphRequest.Callback() {
-                            @Override
-                            public void onCompleted(
-                                    GraphResponse response) {
-                                // Application code
-                                Log.d(TAG, response.toString());
-
-                                try{
-                                    JSONArray k = response.getJSONObject().getJSONArray("data");
-                                    for(int i = 0 ; i < k.length() ; i++){
-                                        Log.d(TAG, k.get(i).toString());
-                                    }
-
-                                }catch(JSONException e){
-                                    e.printStackTrace();
+                            try{
+                                JSONArray k = response.getJSONObject().getJSONArray("data");
+                                for(int i = 0 ; i < k.length() ; i++){
+                                    //Log.d(TAG, k.getJSONObject(i).getString("created_time"));
+                                    insertFacebookPostingData(k.getJSONObject(i).getString("created_time"));
                                 }
+
+                            }catch(JSONException e){
+                                e.printStackTrace();
                             }
-                        });
-                request.executeAsync();
-            }
+                        }
+                    });
+            request.executeAsync();
+        }
+        else {
+            callbackManager = CallbackManager.Factory.create();
+            LoginManager.getInstance().logInWithReadPermissions(MainActivity.this,
+                    Arrays.asList("public_profile","user_posts", "email"));
+            LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+                @Override
+                public void onSuccess(LoginResult loginResult) {
+                    GraphRequest request = new GraphRequest(
+                            loginResult.getAccessToken(),
+                            "/me/feed",
+                            null,
+                            HttpMethod.GET,
+                            new GraphRequest.Callback() {
+                                @Override
+                                public void onCompleted(
+                                        GraphResponse response) {
+                                    // Application code
+                                    Log.d(TAG, response.toString());
 
-            @Override
-            public void onCancel() {
-                Toast.makeText(getApplicationContext(), "in LoginResult on cancel", Toast.LENGTH_LONG).show();
-            }
+                                    try {
+                                        JSONArray k = response.getJSONObject().getJSONArray("data");
+                                        for (int i = 0; i < k.length(); i++) {
+                                            Log.d(TAG, k.getJSONObject(i).getString("created_time"));
 
-            @Override
-            public void onError(FacebookException exception) {
-                Toast.makeText(getApplicationContext(), "in LoginResult on error", Toast.LENGTH_LONG).show();
-            }
-        });
+                                        }
+
+                                    } catch (JSONException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            });
+                    BasicInfo.loginResult = loginResult;
+                    request.executeAsync();
+                }
+
+                @Override
+                public void onCancel() {
+                    Toast.makeText(getApplicationContext(), "in LoginResult on cancel", Toast.LENGTH_LONG).show();
+                }
+
+                @Override
+                public void onError(FacebookException exception) {
+                    Toast.makeText(getApplicationContext(), "in LoginResult on error", Toast.LENGTH_LONG).show();
+                }
+            });
+        }
         Log.d(TAG, "connect_facebook() end!!!!!");
     }
     /**
@@ -259,6 +293,7 @@ public class MainActivity extends AppCompatActivity {
                 thread.start();
             }
             else if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN){
+                BasicInfo.FacebookLogin = true;
                 callbackManager.onActivityResult(requestCode, resultCode, resultIntent);
             }
         }
@@ -387,6 +422,11 @@ public class MainActivity extends AppCompatActivity {
         insertToDatabase(phoneID, "Twitter", date);
     }
 
+    private void insertFacebookPostingData(String date) {
+        String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        insertToDatabase(phoneID, "Facebook", date);
+    }
+
     private void insertToDatabase(String phoneID, String sns, String date) {
 
         class InsertData extends AsyncTask<String, Void, String> {
@@ -405,7 +445,7 @@ public class MainActivity extends AppCompatActivity {
                     String sns = params[1];
                     String date = params[2];
 
-                    String link="http://192.168.0.14/~jaewook/insert.php"; // Server IP address
+                    String link="http://192.168.0.42/~jaewook/insert.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");

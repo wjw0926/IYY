@@ -1,5 +1,7 @@
 package com.cs350.iyy;
 
+import com.facebook.login.LoginResult;
+
 import twitter4j.Twitter;
 import twitter4j.auth.AccessToken;
 import twitter4j.auth.RequestToken;
@@ -21,4 +23,7 @@ class BasicInfo {
     public static String TWIT_KEY_TOKEN = "";
     public static String TWIT_KEY_TOKEN_SECRET = "";
     public static String TwitScreenName = "";
+
+    public static boolean FacebookLogin = false;
+    public static LoginResult loginResult;
 }
