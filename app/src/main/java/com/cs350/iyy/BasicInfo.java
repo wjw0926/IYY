@@ -29,7 +29,7 @@ class BasicInfo {
 
     public static boolean FacebookLogin = false;
     public static LoginResult loginResult;
-
+    
     public static boolean collectFacebook = false;
     public static boolean collectTwitter = false;
 
@@ -44,4 +44,9 @@ class BasicInfo {
     private static final SimpleDateFormat globalSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     private static final String globalDateTime = globalSDF.format(globalDate);
     public static String DATE_TO = globalDateTime;
+
+    public static String FacebookProcessName = "org.androidtown.sns.twitapp";
+    public static String TwitterProcessName = "org.androidtown.sns.twitapp";
+    public static boolean FacebookProcessStatus = false;
+    public static boolean TwitterProcessStatus = false;
 }

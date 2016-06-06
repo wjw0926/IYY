@@ -132,10 +132,25 @@ public class MainActivity extends AppCompatActivity {
     public void onProcessList(View v) {
         ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+        boolean facebook_check = false;
         for(int i = 0; i < appList.size(); i++) {
             ActivityManager.RunningAppProcessInfo rapi = appList.get(i);
-            Log.d("Running process",rapi.processName);
+            Log.d("run Process","Package Name : " + rapi.processName);
+            if(rapi.processName.equals(BasicInfo.FacebookProcessName)  ) {
+                Log.d("run Process", "I FIND!!!!!!");
+                facebook_check = true;
+            }
         }
+        if(facebook_check && !BasicInfo.FacebookProcessStatus) {
+            Log.e("run Process", "Facebook Start");
+            BasicInfo.FacebookProcessStatus = true;
+
+        }else if(!facebook_check && BasicInfo.FacebookProcessStatus){
+            Log.e("run Process", "Facebook End");
+            BasicInfo.FacebookProcessStatus = false;
+        }
+
+
     }
 
     private void connect_twitter() {
