@@ -42,6 +42,7 @@ import com.facebook.login.LoginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -59,8 +60,10 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TimerTask timerTask = null;
-    private static Timer timer = null;
+    private TimerTask postingTimerTask = null;
+    private TimerTask statusTimerTask = null;
+    private static Timer postingTimer = null;
+    private static Timer statusTimer = null;
 
     private final Handler mHandler = new Handler();
 
@@ -89,13 +92,22 @@ public class MainActivity extends AppCompatActivity {
         tb.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 if (tb.isChecked()) {
-                    timerJob();
-                    timer = new Timer();
-                    timer.schedule(timerTask, 0, 60000);
+
+                    postingJob();
+                    statusJob();
+
+                    postingTimer = new Timer();
+                    statusTimer = new Timer();
+                    postingTimer.schedule(postingTimerTask, 0, 60000);
+                    statusTimer.schedule(statusTimerTask, 60000, 60000);
+
                     checked = true;
                 } else {
-                    timer.cancel();
-                    timer = null;
+                    postingTimer.cancel();
+                    statusTimer.cancel();
+                    postingTimer = null;
+                    statusTimer = null;
+
                     checked = false;
                 }
             }
@@ -103,15 +115,31 @@ public class MainActivity extends AppCompatActivity {
         tb.setChecked(checked);
     }
 
-    private void timerJob() {
+    private void postingJob() {
         try {
-            timerTask = new TimerTask() {
+            postingTimerTask = new TimerTask() {
                 @Override
                 public void run() {
                     if (BasicInfo.collectFacebook)
                         connect_facebook();
                     if (BasicInfo.collectTwitter)
                         connect_twitter();
+                }
+            };
+        } catch (Exception ignored) {
+
+        }
+    }
+
+    private void statusJob() {
+        try {
+            statusTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    if (BasicInfo.collectFacebook)
+                        collectFacebookStatus();
+                    if (BasicInfo.collectTwitter)
+                        collectTwitterStatus();
                 }
             };
         } catch (Exception ignored) {
@@ -129,28 +157,56 @@ public class MainActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    public void onProcessList(View v) {
+    private void collectTwitterStatus() {
+
+        boolean currentTwitterStatus = false;
         ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
         List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
-        boolean facebook_check = false;
+
         for(int i = 0; i < appList.size(); i++) {
-            ActivityManager.RunningAppProcessInfo rapi = appList.get(i);
-            Log.d("run Process","Package Name : " + rapi.processName);
-            if(rapi.processName.equals(BasicInfo.FacebookProcessName)  ) {
-                Log.d("run Process", "I FIND!!!!!!");
-                facebook_check = true;
-            }
-        }
-        if(facebook_check && !BasicInfo.FacebookProcessStatus) {
-            Log.e("run Process", "Facebook Start");
-            BasicInfo.FacebookProcessStatus = true;
-
-        }else if(!facebook_check && BasicInfo.FacebookProcessStatus){
-            Log.e("run Process", "Facebook End");
-            BasicInfo.FacebookProcessStatus = false;
+            ActivityManager.RunningAppProcessInfo rApi = appList.get(i);
+            Log.d("run Process", rApi.processName);
+            if(rApi.processName.equals(BasicInfo.TwitterProcessName))
+                if(rApi.importance == 100)
+                    currentTwitterStatus = true;
         }
 
+        SimpleDateFormat cdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+        if(currentTwitterStatus && !BasicInfo.previousTwitterStatus) {
+            insertFacebookStatusData("Opened", cdf.format(new Date()));
+            BasicInfo.previousTwitterStatus = true;
+
+        }else if(!currentTwitterStatus && BasicInfo.previousTwitterStatus){
+            insertFacebookStatusData("Closed", cdf.format(new Date()));
+            BasicInfo.previousTwitterStatus = false;
+        }
+    }
+
+    private void collectFacebookStatus() {
+
+        boolean currentFacebookStatus = false;
+        ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+
+        for(int i = 0; i < appList.size(); i++) {
+            ActivityManager.RunningAppProcessInfo rApi = appList.get(i);
+            Log.d("run Process", rApi.processName);
+            if(rApi.processName.equals(BasicInfo.FacebookProcessName))
+                if(rApi.importance == 100)
+                    currentFacebookStatus = true;
+        }
+
+        SimpleDateFormat cdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+        if(currentFacebookStatus && !BasicInfo.previousFacebookStatus) {
+            insertFacebookStatusData("Opened", cdf.format(new Date()));
+            BasicInfo.previousFacebookStatus = true;
+
+        }else if(!currentFacebookStatus && BasicInfo.previousFacebookStatus){
+            insertFacebookStatusData("Closed", cdf.format(new Date()));
+            BasicInfo.previousFacebookStatus = false;
+        }
     }
 
     private void connect_twitter() {
@@ -225,7 +281,6 @@ public class MainActivity extends AppCompatActivity {
                                             String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
                                             insertFacebookPostingData(date + " " + time);
                                         }
-
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
@@ -362,7 +417,6 @@ public class MainActivity extends AppCompatActivity {
                     String dateTime = sdf.format(status.get(i).getCreatedAt());
                     insertTwitterPostingData(dateTime);
                 }
-
             } catch(Exception ex) {
                 ex.printStackTrace();
             }
@@ -420,15 +474,25 @@ public class MainActivity extends AppCompatActivity {
 
     private void insertTwitterPostingData(String date) {
         String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        insertToDatabase(phoneID, "Twitter", date);
+        insertPostingToDatabase(phoneID, "Twitter", date);
     }
 
     private void insertFacebookPostingData(String date) {
         String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-        insertToDatabase(phoneID, "Facebook", date);
+        insertPostingToDatabase(phoneID, "Facebook", date);
     }
 
-    private void insertToDatabase(String phoneID, String sns, String date) {
+    private void insertTwitterStatusData(String status, String date) {
+        String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        insertStatusToDatabase(phoneID, "Twitter", status, date);
+    }
+
+    private void insertFacebookStatusData(String status, String date) {
+        String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+        insertStatusToDatabase(phoneID, "Facebook", status, date);
+    }
+
+    private void insertPostingToDatabase(String phoneID, String sns, String date) {
 
         class InsertData extends AsyncTask<String, Void, String> {
 
@@ -446,7 +510,7 @@ public class MainActivity extends AppCompatActivity {
                     String sns = params[1];
                     String date = params[2];
 
-                    String link="http://192.168.0.42/~jaewook/insert.php"; // Server IP address
+                    String link="http://192.168.0.42/~jaewook/insertPosting.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
@@ -483,4 +547,60 @@ public class MainActivity extends AppCompatActivity {
         task.execute(phoneID, sns, date);
     }
 
+    private void insertStatusToDatabase(String phoneID, String sns, String status, String date) {
+
+        class InsertData extends AsyncTask<String, Void, String> {
+
+            @Override
+            protected void onPostExecute(String s) {
+                super.onPostExecute(s);
+                //loading.dismiss();
+                //Toast.makeText(getApplicationContext(), s, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            protected String doInBackground(String... params) {
+                try{
+                    String phoneID = params[0];
+                    String sns = params[1];
+                    String status = params[2];
+                    String date = params[3];
+
+                    String link="http://192.168.0.42/~jaewook/insertStatus.php"; // Server IP address
+                    String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
+                    data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
+                    data += "&" + URLEncoder.encode("status", "UTF-8") + "=" + URLEncoder.encode(status, "UTF-8");
+                    data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
+
+                    URL url = new URL(link);
+                    URLConnection conn = url.openConnection();
+
+                    conn.setDoOutput(true);
+                    OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
+
+                    wr.write( data );
+                    wr.flush();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+
+                    StringBuilder sb = new StringBuilder();
+                    String line;
+
+                    // Read Server Response
+                    while((line = reader.readLine()) != null)
+                    {
+                        sb.append(line);
+                        break;
+                    }
+                    return sb.toString();
+                }
+                catch(Exception e) {
+                    return "Exception: " + e.getMessage();
+                }
+            }
+        }
+
+        InsertData task = new InsertData();
+        task.execute(phoneID, sns, status, date);
+    }
 }

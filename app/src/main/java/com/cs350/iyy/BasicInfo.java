@@ -37,7 +37,7 @@ class BasicInfo {
      * For drawing charts
      */
     public static String TYPE_OF_SNS = "Twitter";
-    public static String CHECK_VALUE = "";
+    public static String CHECK_VALUE = "Posting";
     public static String DATE_FROM = "2015-01-01 00:00:00";
 
     private static final Date globalDate = new Date();
@@ -45,8 +45,8 @@ class BasicInfo {
     private static final String globalDateTime = globalSDF.format(globalDate);
     public static String DATE_TO = globalDateTime;
 
-    public static String FacebookProcessName = "org.androidtown.sns.twitapp";
-    public static String TwitterProcessName = "org.androidtown.sns.twitapp";
-    public static boolean FacebookProcessStatus = false;
-    public static boolean TwitterProcessStatus = false;
+    public static final String FacebookProcessName = "com.facebook";
+    public static final String TwitterProcessName = "com.twitter.sdk.android";
+    public static boolean previousFacebookStatus = false;
+    public static boolean previousTwitterStatus = false;
 }
