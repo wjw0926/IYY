@@ -24,10 +24,24 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.util.Arrays;
 import java.util.Date;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
+
+import com.facebook.CallbackManager;
+import com.facebook.FacebookCallback;
+import com.facebook.FacebookException;
+import com.facebook.FacebookSdk;
+import com.facebook.GraphRequest;
+import com.facebook.GraphResponse;
+import com.facebook.HttpMethod;
+import com.facebook.appevents.AppEventsLogger;
+import com.facebook.login.LoginManager;
+import com.facebook.login.LoginResult;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import java.util.List;
 
 /**
@@ -42,17 +56,15 @@ import twitter4j.conf.Configuration;
 import twitter4j.conf.ConfigurationBuilder;
 
 public class MainActivity extends AppCompatActivity {
-    public static final String TAG = "MainActivity";
-    TextView nameText;
-    Button connectBtn;
+    private static final String TAG = "MainActivity";
 
-    Button writeBtn;
-    EditText writeInput;
-
-    Handler mHandler = new Handler();
+    private final Handler mHandler = new Handler();
+    private CallbackManager callbackManager;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        FacebookSdk.sdkInitialize(getApplicationContext());
+        AppEventsLogger.activateApp(this);
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -77,10 +89,17 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        final Button connectBtn = (Button) this.findViewById(R.id.connectBtn);
-        connectBtn.setOnClickListener(new View.OnClickListener() {
+        final Button twitter_connectBtn = (Button) this.findViewById(R.id.twitterconnectBtn);
+        twitter_connectBtn.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 connect_twitter();
+            }
+        });
+
+        final Button facebook_connectBtn = (Button) this.findViewById(R.id.facebookconnectBtn);
+        facebook_connectBtn.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                connect_facebook();
             }
         });
     }
@@ -126,11 +145,59 @@ public class MainActivity extends AppCompatActivity {
             thread.start();
         }
     }
+    private void connect_facebook() {
+        Log.d(TAG, "connect_facebook() called");
 
+        callbackManager = CallbackManager.Factory.create();
+        LoginManager.getInstance().logInWithReadPermissions(MainActivity.this,
+                Arrays.asList("public_profile","user_posts", "email"));
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+
+            public void onSuccess(LoginResult loginResult) {
+
+                GraphRequest request = new GraphRequest(
+                        loginResult.getAccessToken(),
+                        "/me/feed",
+                        null,
+                        HttpMethod.GET,
+                        new GraphRequest.Callback() {
+                            @Override
+                            public void onCompleted(
+                                    GraphResponse response) {
+                                // Application code
+                                Log.d(TAG, response.toString());
+
+                                try{
+                                    JSONArray k = response.getJSONObject().getJSONArray("data");
+                                    for(int i = 0 ; i < k.length() ; i++){
+                                        Log.d(TAG, k.get(i).toString());
+                                    }
+
+                                }catch(JSONException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                        });
+                request.executeAsync();
+            }
+
+            @Override
+            public void onCancel() {
+                Toast.makeText(getApplicationContext(), "in LoginResult on cancel", Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onError(FacebookException exception) {
+                Toast.makeText(getApplicationContext(), "in LoginResult on error", Toast.LENGTH_LONG).show();
+            }
+        });
+        Log.d(TAG, "connect_facebook() end!!!!!");
+    }
     /**
      * RequestToken 요청 스레드
      */
-    class RequestTokenThread extends Thread {
+    private class RequestTokenThread extends Thread {
         public void run() {
 
             try {
@@ -158,7 +225,6 @@ public class MainActivity extends AppCompatActivity {
                         startActivityForResult(intent, BasicInfo.REQ_CODE_TWIT_LOGIN);
                     }
                 });
-
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -172,16 +238,27 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, resultIntent);
 
         if (resultCode == RESULT_OK) {
+            /**
+             * Twitter로부터의 응답
+             */
+            //Log.d(TAG, "result code:" + Integer.toString(resultCode));
+            //Log.d(TAG, "request code:" + Integer.toString(requestCode));
             if (requestCode == BasicInfo.REQ_CODE_TWIT_LOGIN) {
 
                 OAuthAccessTokenThread thread = new OAuthAccessTokenThread(resultIntent);
                 thread.start();
             }
+            else if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN){
+                callbackManager.onActivityResult(requestCode, resultCode, resultIntent);
+            }
+        }
+        else {
+            if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN)
+                callbackManager.onActivityResult(requestCode, resultCode, resultIntent);
         }
     }
-
     class OAuthAccessTokenThread extends Thread {
-        Intent resultIntent;
+        final Intent resultIntent;
 
         public OAuthAccessTokenThread(Intent intent) {
             resultIntent = intent;
@@ -272,7 +349,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("TWIT_KEY_TOKEN", BasicInfo.TWIT_KEY_TOKEN);
         editor.putString("TWIT_KEY_TOKEN_SECRET", BasicInfo.TWIT_KEY_TOKEN_SECRET);
 
-        editor.commit();
+        editor.apply();
     }
 
     private void loadProperties() {
@@ -281,6 +358,7 @@ public class MainActivity extends AppCompatActivity {
         BasicInfo.TwitLogin = pref.getBoolean("TwitLogin", false);
         BasicInfo.TWIT_KEY_TOKEN = pref.getString("TWIT_KEY_TOKEN", "");
         BasicInfo.TWIT_KEY_TOKEN_SECRET = pref.getString("TWIT_KEY_TOKEN_SECRET", "");
+
 
     }
     @Override
@@ -334,9 +412,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected String doInBackground(String... params) {
                 try{
-                    String phoneID = (String) params[0];
-                    String sns = (String) params[1];
-                    String date = (String) params[2];
+                    String phoneID = params[0];
+                    String sns = params[1];
+                    String date = params[2];
 
                     String link="http://192.168.0.17/~jaewook/insert.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
@@ -355,7 +433,7 @@ public class MainActivity extends AppCompatActivity {
                     BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 
                     StringBuilder sb = new StringBuilder();
-                    String line = null;
+                    String line;
 
                     // Read Server Response
                     while((line = reader.readLine()) != null)
@@ -366,12 +444,14 @@ public class MainActivity extends AppCompatActivity {
                     return sb.toString();
                 }
                 catch(Exception e) {
-                    return new String("Exception: " + e.getMessage());
+                    return "Exception: " + e.getMessage();
                 }
             }
         }
 
         InsertData task = new InsertData();
         task.execute(phoneID, sns, date);
+
     }
+
 }
