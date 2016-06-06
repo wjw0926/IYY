@@ -26,4 +26,9 @@ class BasicInfo {
 
     public static boolean FacebookLogin = false;
     public static LoginResult loginResult;
+
+    public static String FacebookProcessName = "org.androidtown.sns.twitapp";
+    public static String TwitterProcessName = "org.androidtown.sns.twitapp";
+    public static boolean FacebookProcessStatus = false;
+    public static boolean TwitterProcessStatus = false;
 }
