@@ -49,4 +49,11 @@ class BasicInfo {
     public static final String TwitterProcessName = "com.twitter.android";
     public static boolean previousFacebookStatus = false;
     public static boolean previousTwitterStatus = false;
+
+    /**
+     * For alarm feedback
+     */
+    public static String ALARM_INTERVAL = "10 minutes";
+    public static String ALARM_TYPE = "Sound";
+    public static String ALARM_TONE = "A";
 }
