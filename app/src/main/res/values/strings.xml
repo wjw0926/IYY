@@ -21,4 +21,5 @@
     <string name="title_activity_chart">ChartActivity</string>
     <string name="facebook_app_id">1713992312214761</string>
     <string name="title_activity_twit_login">TwitLogin</string>
+    <string name="title_activity_chart2">Chart2Activity</string>
 </resources>
