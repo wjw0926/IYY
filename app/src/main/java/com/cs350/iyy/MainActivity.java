@@ -4,6 +4,8 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -12,6 +14,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -25,6 +28,9 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.Signature;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
@@ -113,7 +119,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         tb.setChecked(checked);
+
     }
+
 
     private void postingJob() {
         try {
@@ -510,7 +518,7 @@ public class MainActivity extends AppCompatActivity {
                     String sns = params[1];
                     String date = params[2];
 
-                    String link="http://192.168.0.42/~jaewook/insertPosting.php"; // Server IP address
+                    String link="http://143.248.199.109/~jaewook/insertPosting.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
@@ -566,7 +574,7 @@ public class MainActivity extends AppCompatActivity {
                     String status = params[2];
                     String date = params[3];
 
-                    String link="http://192.168.0.42/~jaewook/insertStatus.php"; // Server IP address
+                    String link="http://143.248.199.109/~jaewook/insertStatus.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("status", "UTF-8") + "=" + URLEncoder.encode(status, "UTF-8");

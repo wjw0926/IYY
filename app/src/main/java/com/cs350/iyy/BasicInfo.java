@@ -38,7 +38,7 @@ class BasicInfo {
      */
     public static String TYPE_OF_SNS = "Twitter";
     public static String CHECK_VALUE = "Posting";
-    public static String DATE_FROM = "2015-01-01 00:00:00";
+    public static String DATE_FROM = "2016-06-01 00:00:00";
 
     private static final Date globalDate = new Date();
     private static final SimpleDateFormat globalSDF = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
