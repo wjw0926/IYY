@@ -4,8 +4,6 @@ import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -14,8 +12,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Base64;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,9 +25,6 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
 import java.text.ParseException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.Signature;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
@@ -80,6 +73,8 @@ public class MainActivity extends AppCompatActivity {
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
+    private static int snsUsingTime = 0;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -123,9 +118,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         tb.setChecked(checked);
-
     }
-
 
     private void postingJob() {
         try {
@@ -167,6 +160,21 @@ public class MainActivity extends AppCompatActivity {
     public void onStatisticsButtonClicked(View v) {
         Intent intent = new Intent(getApplicationContext(), StatisticsActivity.class);
         startActivity(intent);
+    }
+
+    private void checkUsingTime() {
+        ActivityManager am = (ActivityManager) getApplicationContext().getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningAppProcessInfo> appList = am.getRunningAppProcesses();
+
+        for(int i = 0; i < appList.size(); i++) {
+            ActivityManager.RunningAppProcessInfo rApi = appList.get(i);
+            if(rApi.processName.equals(BasicInfo.TwitterProcessName))
+                if(rApi.importance == 100)
+                    snsUsingTime += 5000;
+            if(rApi.processName.equals(BasicInfo.FacebookProcessName))
+                if(rApi.importance == 100)
+                    snsUsingTime += 5000;
+        }
     }
 
     private void collectTwitterStatus() {

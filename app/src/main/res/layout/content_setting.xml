@@ -107,7 +107,6 @@
 
     <!-- Move to main activity-->
     <Button
-        android:id="@+id/setting_back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/alarm_tone_text"
