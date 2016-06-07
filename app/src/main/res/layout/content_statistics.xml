@@ -79,7 +79,7 @@
         android:layout_alignParentEnd="true"
         android:layout_marginTop="30dp"
         android:text="@string/run_button"
-        android:textOn="Time used"
+        android:textOn="Open count"
         android:textOff="Number of postings" />
 
     <Button

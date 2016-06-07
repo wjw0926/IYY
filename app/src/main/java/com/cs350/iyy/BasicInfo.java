@@ -53,6 +53,8 @@ class BasicInfo {
     /**
      * For alarm feedback
      */
+    public static int SNS_USING_TIME = 0;
+    public static int SNS_USING_TIME_ADD = 0;
     public static String ALARM_INTERVAL = "10 minutes";
     public static String ALARM_TYPE = "Sound";
     public static String ALARM_TONE = "A";

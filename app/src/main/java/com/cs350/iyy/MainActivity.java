@@ -1,17 +1,21 @@
 package com.cs350.iyy;
 
 import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -61,8 +65,11 @@ import twitter4j.conf.ConfigurationBuilder;
 
 public class MainActivity extends AppCompatActivity {
 
+    private TimerTask alarmTimerTask = null;
     private TimerTask postingTimerTask = null;
     private TimerTask statusTimerTask = null;
+
+    private static Timer alarmTimer = null;
     private static Timer postingTimer = null;
     private static Timer statusTimer = null;
 
@@ -73,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    private static int snsUsingTime = 0;
+    static int standardTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -98,18 +105,25 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 if (tb.isChecked()) {
 
+                    alarmJob();
                     postingJob();
                     statusJob();
 
+                    alarmTimer = new Timer();
                     postingTimer = new Timer();
                     statusTimer = new Timer();
+
+                    alarmTimer.schedule(alarmTimerTask, 5000, 5000);
                     postingTimer.schedule(postingTimerTask, 0, 60000);
                     statusTimer.schedule(statusTimerTask, 5000, 5000);
 
                     checked = true;
                 } else {
+                    alarmTimer.cancel();
                     postingTimer.cancel();
                     statusTimer.cancel();
+
+                    alarmTimer = null;
                     postingTimer = null;
                     statusTimer = null;
 
@@ -118,6 +132,19 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         tb.setChecked(checked);
+    }
+
+    private void alarmJob() {
+        try {
+            alarmTimerTask = new TimerTask() {
+                @Override
+                public void run() {
+                    checkUsingTime();
+                }
+            };
+        } catch (Exception ignored) {
+
+        }
     }
 
     private void postingJob() {
@@ -169,11 +196,40 @@ public class MainActivity extends AppCompatActivity {
         for(int i = 0; i < appList.size(); i++) {
             ActivityManager.RunningAppProcessInfo rApi = appList.get(i);
             if(rApi.processName.equals(BasicInfo.TwitterProcessName))
-                if(rApi.importance == 100)
-                    snsUsingTime += 5000;
+                if(rApi.importance == 100) {
+                    BasicInfo.SNS_USING_TIME_ADD += 5000;
+                    BasicInfo.SNS_USING_TIME += 5000;
+                }
             if(rApi.processName.equals(BasicInfo.FacebookProcessName))
-                if(rApi.importance == 100)
-                    snsUsingTime += 5000;
+                if(rApi.importance == 100) {
+                    BasicInfo.SNS_USING_TIME_ADD += 5000;
+                    BasicInfo.SNS_USING_TIME += 5000;
+                }
+        }
+
+        switch(BasicInfo.ALARM_INTERVAL){
+            case "10 minutes":
+                standardTime = 60000;
+                break;
+            case "30 minutes":
+                standardTime = 1800000;
+                break;
+            case "1 hour":
+                standardTime = 3600000;
+                break;
+            case "3 hours":
+                standardTime = 10800000;
+                break;
+            default:
+                standardTime = 60000;
+                break;
+        }
+        System.out.println(BasicInfo.SNS_USING_TIME);
+        if (BasicInfo.SNS_USING_TIME > standardTime)
+        {
+            Intent intent = new Intent(getApplicationContext(), AlarmActivity.class);
+            startActivity(intent);
+            BasicInfo.SNS_USING_TIME = BasicInfo.SNS_USING_TIME - standardTime;
         }
     }
 

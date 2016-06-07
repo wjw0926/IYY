@@ -100,7 +100,6 @@ public class ChartActivity extends AppCompatActivity {
                 JSONObject c = postings.getJSONObject(i);
                 String status = c.getString(TAG_STATUS);
                 String date = c.getString(TAG_DATE);
-                Log.e("STATUS???", status);
                 if (Objects.equals(status, "Opened"))
                     k[getIndexFromDate(date)] +=1;
             }
