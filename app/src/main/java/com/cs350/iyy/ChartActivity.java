@@ -57,9 +57,9 @@ public class ChartActivity extends AppCompatActivity {
         postingList = new ArrayList<>();
         String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         if (Objects.equals(BasicInfo.CHECK_VALUE, "Posting"))
-            getData("http://192.168.0.42/~jaewook/getPosting.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
+            getData("http://143.248.199.109/~jaewook/getPosting.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
         else if (Objects.equals(BasicInfo.CHECK_VALUE, "Time"))
-            getData("http://192.168.0.42/~jaewook/getStatus.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
+            getData("http://143.248.199.109/~jaewook/getStatus.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
     }
 
     private void showList(String result) {

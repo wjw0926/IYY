@@ -45,8 +45,8 @@ class BasicInfo {
     private static final String globalDateTime = globalSDF.format(globalDate);
     public static String DATE_TO = globalDateTime;
 
-    public static final String FacebookProcessName = "com.facebook";
-    public static final String TwitterProcessName = "com.twitter.sdk.android";
+    public static final String FacebookProcessName = "com.facebook.katana";
+    public static final String TwitterProcessName = "com.twitter.android";
     public static boolean previousFacebookStatus = false;
     public static boolean previousTwitterStatus = false;
 }

@@ -25,6 +25,7 @@ import java.io.OutputStreamWriter;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 
@@ -42,6 +43,7 @@ import com.facebook.login.LoginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -69,6 +71,8 @@ public class MainActivity extends AppCompatActivity {
 
     private static Boolean checked = false;
     private CallbackManager callbackManager;
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -99,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     postingTimer = new Timer();
                     statusTimer = new Timer();
                     postingTimer.schedule(postingTimerTask, 0, 60000);
-                    statusTimer.schedule(statusTimerTask, 60000, 60000);
+                    statusTimer.schedule(statusTimerTask, 10000, 10000);
 
                     checked = true;
                 } else {
@@ -165,20 +169,17 @@ public class MainActivity extends AppCompatActivity {
 
         for(int i = 0; i < appList.size(); i++) {
             ActivityManager.RunningAppProcessInfo rApi = appList.get(i);
-            Log.d("run Process", rApi.processName);
             if(rApi.processName.equals(BasicInfo.TwitterProcessName))
                 if(rApi.importance == 100)
                     currentTwitterStatus = true;
         }
 
-        SimpleDateFormat cdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
         if(currentTwitterStatus && !BasicInfo.previousTwitterStatus) {
-            insertFacebookStatusData("Opened", cdf.format(new Date()));
+            insertTwitterStatusData("Opened", sdf.format(new Date()));
             BasicInfo.previousTwitterStatus = true;
 
         }else if(!currentTwitterStatus && BasicInfo.previousTwitterStatus){
-            insertFacebookStatusData("Closed", cdf.format(new Date()));
+            insertTwitterStatusData("Closed", sdf.format(new Date()));
             BasicInfo.previousTwitterStatus = false;
         }
     }
@@ -191,20 +192,17 @@ public class MainActivity extends AppCompatActivity {
 
         for(int i = 0; i < appList.size(); i++) {
             ActivityManager.RunningAppProcessInfo rApi = appList.get(i);
-            Log.d("run Process", rApi.processName);
             if(rApi.processName.equals(BasicInfo.FacebookProcessName))
                 if(rApi.importance == 100)
                     currentFacebookStatus = true;
         }
 
-        SimpleDateFormat cdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
         if(currentFacebookStatus && !BasicInfo.previousFacebookStatus) {
-            insertFacebookStatusData("Opened", cdf.format(new Date()));
+            insertFacebookStatusData("Opened", sdf.format(new Date()));
             BasicInfo.previousFacebookStatus = true;
 
         }else if(!currentFacebookStatus && BasicInfo.previousFacebookStatus){
-            insertFacebookStatusData("Closed", cdf.format(new Date()));
+            insertFacebookStatusData("Closed", sdf.format(new Date()));
             BasicInfo.previousFacebookStatus = false;
         }
     }
@@ -241,16 +239,27 @@ public class MainActivity extends AppCompatActivity {
                     HttpMethod.GET,
                     new GraphRequest.Callback() {
                         @Override
-                        public void onCompleted(
-                                GraphResponse response) {
+                        public void onCompleted(GraphResponse response) {
                             try{
                                 JSONArray k = response.getJSONObject().getJSONArray("data");
-                                for(int i = 0 ; i < k.length() ; i++){
-                                    String date = k.getJSONObject(i).getString("created_time").substring(0, 10);
-                                    String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
-                                    insertFacebookPostingData(date + " " + time);
-                                }
 
+                                for(int i = 0 ; i < k.length() ; i++){
+                                    try{
+                                        String date = k.getJSONObject(i).getString("created_time").substring(0, 10);
+                                        String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
+
+                                        Date d = sdf.parse(date + " " + time);
+
+                                        Calendar cal = Calendar.getInstance();
+                                        cal.setTime(d);
+                                        cal.add(Calendar.HOUR, 9);
+
+                                        insertFacebookPostingData(sdf.format(cal.getTime()));
+                                    } catch (ParseException e)
+                                    {
+                                        e.printStackTrace();
+                                    }
+                                }
                             }catch(JSONException e){
                                 e.printStackTrace();
                             }
@@ -261,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
         else {
             callbackManager = CallbackManager.Factory.create();
             LoginManager.getInstance().logInWithReadPermissions(MainActivity.this,
-                    Arrays.asList("public_profile","user_posts", "email"));
+                    Arrays.asList("public_profile", "user_posts", "email"));
             LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
                 @Override
                 public void onSuccess(LoginResult loginResult) {
@@ -277,15 +286,28 @@ public class MainActivity extends AppCompatActivity {
                                     try {
                                         JSONArray k = response.getJSONObject().getJSONArray("data");
                                         for (int i = 0; i < k.length(); i++) {
-                                            String date = k.getJSONObject(i).getString("created_time").substring(0, 10);
-                                            String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
-                                            insertFacebookPostingData(date + " " + time);
+                                            try{
+                                                String date = k.getJSONObject(i).getString("created_time").substring(0, 10);
+                                                String time = k.getJSONObject(i).getString("created_time").substring(11, 19);
+
+                                                Date d = sdf.parse(date + " " + time);
+
+                                                Calendar cal = Calendar.getInstance();
+                                                cal.setTime(d);
+                                                cal.add(Calendar.HOUR, 9);
+
+                                                insertFacebookPostingData(sdf.format(cal.getTime()));
+                                            } catch (ParseException e)
+                                            {
+                                                e.printStackTrace();
+                                            }
                                         }
                                     } catch (JSONException e) {
                                         e.printStackTrace();
                                     }
                                 }
-                            });
+                            }
+                    );
                     BasicInfo.loginResult = loginResult;
                     request.executeAsync();
                 }
@@ -341,9 +363,6 @@ public class MainActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, resultIntent);
 
         if (resultCode == RESULT_OK) {
-            /**
-             * Twitter로부터의 응답
-             */
             if (requestCode == BasicInfo.REQ_CODE_TWIT_LOGIN) {
 
                 OAuthAccessTokenThread thread = new OAuthAccessTokenThread(resultIntent);
@@ -355,8 +374,10 @@ public class MainActivity extends AppCompatActivity {
             }
         }
         else {
-            if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN)
+            if(requestCode == BasicInfo.REQ_CODE_FACEBOOK_LOGIN) {
+                BasicInfo.FacebookLogin = false;
                 callbackManager.onActivityResult(requestCode, resultCode, resultIntent);
+            }
         }
     }
     class OAuthAccessTokenThread extends Thread {
@@ -410,8 +431,6 @@ public class MainActivity extends AppCompatActivity {
 
             try {
                 final List<Status> status = mTwit.getUserTimeline();
-
-                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
                 for (int i = 0; i < status.size(); i++) {
                     String dateTime = sdf.format(status.get(i).getCreatedAt());
@@ -510,7 +529,7 @@ public class MainActivity extends AppCompatActivity {
                     String sns = params[1];
                     String date = params[2];
 
-                    String link="http://192.168.0.42/~jaewook/insertPosting.php"; // Server IP address
+                    String link="http://143.248.199.109/~jaewook/insertPosting.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("date", "UTF-8") + "=" + URLEncoder.encode(date, "UTF-8");
@@ -566,7 +585,7 @@ public class MainActivity extends AppCompatActivity {
                     String status = params[2];
                     String date = params[3];
 
-                    String link="http://192.168.0.42/~jaewook/insertStatus.php"; // Server IP address
+                    String link="http://143.248.199.109/~jaewook/insertStatus.php"; // Server IP address
                     String data = URLEncoder.encode("phoneID", "UTF-8") + "=" + URLEncoder.encode(phoneID, "UTF-8");
                     data += "&" + URLEncoder.encode("sns", "UTF-8") + "=" + URLEncoder.encode(sns, "UTF-8");
                     data += "&" + URLEncoder.encode("status", "UTF-8") + "=" + URLEncoder.encode(status, "UTF-8");
