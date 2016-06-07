@@ -65,7 +65,7 @@ public class SettingActivity extends AppCompatActivity {
         final Spinner alarmIntervalSpinner = (Spinner) findViewById(R.id.alarm_interval_spinner);
         alarmIntervalSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = parent.getItemAtPosition(position).toString();
+                BasicInfo.ALARM_INTERVAL = parent.getItemAtPosition(position).toString();
             }
 
             public void onNothingSelected(AdapterView<?> parent) {
@@ -74,7 +74,7 @@ public class SettingActivity extends AppCompatActivity {
         final Spinner alarmTypeSpinner = (Spinner) findViewById(R.id.alarm_type_spinner);
         alarmTypeSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = parent.getItemAtPosition(position).toString();
+                BasicInfo.ALARM_TYPE = parent.getItemAtPosition(position).toString();
             }
             public void onNothingSelected(AdapterView<?> parent) {
             }
@@ -82,7 +82,7 @@ public class SettingActivity extends AppCompatActivity {
         final Spinner alarmToneSpinner = (Spinner) findViewById(R.id.alarm_tone_spinner);
         alarmToneSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedItem = parent.getItemAtPosition(position).toString();
+                BasicInfo.ALARM_TONE = parent.getItemAtPosition(position).toString();
             }
             public void onNothingSelected(AdapterView<?> parent) {
             }

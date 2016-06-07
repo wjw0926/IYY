@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
     private static Boolean checked = false;
     private CallbackManager callbackManager;
 
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    private final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
                     postingTimer = new Timer();
                     statusTimer = new Timer();
                     postingTimer.schedule(postingTimerTask, 0, 60000);
-                    statusTimer.schedule(statusTimerTask, 10000, 10000);
+                    statusTimer.schedule(statusTimerTask, 5000, 5000);
 
                     checked = true;
                 } else {
