@@ -5,5 +5,6 @@
     android:name="com.cs350.iyy.AlarmActivityFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@drawable/iyy2"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:layout="@layout/fragment_alarm" />
