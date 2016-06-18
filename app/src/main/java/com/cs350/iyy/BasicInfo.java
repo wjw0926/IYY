@@ -13,7 +13,7 @@ class BasicInfo {
     public static final String TWIT_API_KEY = "xRoDCNvHVfoQToAWyebf4g";
     public static final String TWIT_CONSUMER_KEY = "xRoDCNvHVfoQToAWyebf4g";
     public static final String TWIT_CONSUMER_SECRET = "LooMN0gPSrc0j1ddX8AV8tmxBsA28rLWxNhFo0pNJg";
-    public static final String TWIT_CALLBACK_URL = "http://android-town.org";
+    public static final String TWIT_CALLBACK_URL = "http://kaist.ac.kr";
 
     public static final int REQ_CODE_TWIT_LOGIN = 1001;
     public static final int REQ_CODE_FACEBOOK_LOGIN = 64206;
