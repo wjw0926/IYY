@@ -6,6 +6,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="@drawable/iyy2"
     tools:context="com.cs350.iyy.AlarmActivityFragment"
     tools:showIn="@layout/activity_alarm">
 

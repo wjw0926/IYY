@@ -55,9 +55,9 @@ public class ChartActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         String phoneID = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
         if (Objects.equals(BasicInfo.CHECK_VALUE, "Posting"))
-            getPostingData("http://143.248.199.109/~jaewook/getPosting.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
+            getPostingData("http://143.248.199.109/~jaewook/getPosting.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO); // Server IP address
         else if (Objects.equals(BasicInfo.CHECK_VALUE, "Time"))
-            getStatusData("http://143.248.199.109/~jaewook/getStatus.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO);
+            getStatusData("http://143.248.199.109/~jaewook/getStatus.php", phoneID, BasicInfo.TYPE_OF_SNS, BasicInfo.DATE_FROM, BasicInfo.DATE_TO); // Server IP address
     }
 
     private void drawPostingGraph(String result) {
